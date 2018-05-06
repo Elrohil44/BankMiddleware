@@ -1,0 +1,20 @@
+{
+  "name": "bank",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "google-protobuf": "^3.5.0",
+    "grpc": "^1.11.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "babel-preset-env": "^1.6.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "babel-node src/server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
