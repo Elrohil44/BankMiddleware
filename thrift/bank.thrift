@@ -3,7 +3,7 @@ namespace java bank
 typedef string PESEL
 typedef string GUID
 typedef string Currency
-typedef i32 Timestamp
+typedef string Date
 
 struct Account {
     1: PESEL pesel,
@@ -17,6 +17,7 @@ struct AccountDetails {
     1: double balance,
     2: Currency currency,
     3: bool isPremium,
+    4: GUID guid,
 }
 
 struct LoanCosts {
@@ -27,8 +28,8 @@ struct LoanCosts {
 struct LoanParameters {
     1: Currency currency,
     2: double moneyAmount,
-    3: Timestamp startDate,
-    4: Timestamp closeDate,
+    3: Date startDate,
+    4: Date closeDate,
 }
 
 exception AuthorizationException {
@@ -40,7 +41,7 @@ exception InvalidArgumentException {
 }
 
 service AccountManagement {
-    GUID createAccount(1: Account account) throws(1: InvalidArgumentException authorizationException),
+    AccountDetails createAccount(1: Account account) throws(1: InvalidArgumentException authorizationException),
 }
 
 service AccountService {

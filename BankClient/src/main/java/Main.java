@@ -1,7 +1,4 @@
-import bank.Account;
-import bank.AccountManagement;
-import bank.AccountService;
-import bank.PremiumAccountService;
+import bank.*;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TMultiplexedProtocol;
@@ -10,13 +7,17 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+
 public class Main {
-    public static void main (String[] args) throws TException {
+    public static void main (String[] args) throws TTransportException {
         String host = "localhost";
 
-        TProtocol protocol = null;
-        TSocket socket = null;
-        TTransport transport = null;
+        TProtocol protocol;
+        TTransport transport;
 
         transport = new TSocket(host, 9090);
         protocol = new TBinaryProtocol(transport, true, true);
@@ -30,13 +31,34 @@ public class Main {
 
         transport.open();
 
-        System.out.println(accountManagement.createAccount(new Account(
-                "123214",
-                "Jan",
-                "Kowalski",
-                5000.0,
-                "USD"
-        )));
+
+        try {
+            System.out.println(accountManagement.createAccount(new Account(
+                    "12321411111",
+                    "Jan",
+                    "Kowalski",
+                    50000.0,
+                    "PLN"
+            )));
+
+            System.out.println(premiumAccountService.getAccountDetails("0"));
+
+            System.out.println(premiumAccountService.getLoanDetails("0",
+                    new LoanParameters(
+                            "USD",
+                            1000.0,
+                            "2018-06-01",
+                            "2019-06-01"
+                    )
+            ));
+
+        } catch (InvalidArgumentException e) {
+            System.out.println("InvalidArgumentException: " + e.why);
+        } catch (AuthorizationException e) {
+            System.out.println("AuthorizationException: " + e.why);
+        } catch (TException e) {
+            e.printStackTrace();
+        }
 
 
     }

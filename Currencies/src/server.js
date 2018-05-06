@@ -1,21 +1,52 @@
 import grpc from 'grpc';
+import vorpal from 'vorpal';
 
 const PROTO_PATH = __dirname + '/../../protos/currencies.proto';
 
 const currencies_proto = grpc.load(PROTO_PATH).currencies;
 let id = 0;
 
-const currencies = {
-  'USD': 3.5,
-  'EUR': 4.0,
-  'CHF': 4.0,
-  'GBP': 5.0,
+const settings = {};
+const defaultSettings = {
+  currencyChangeInterval: 5000,
+  port: 50051,
 };
 
+const currencies = {'PLN': 1};
 const subscribers = {};
-Object.keys(currencies).forEach(curr => {
-  subscribers[curr] = [];
-});
+const userInputHandler = vorpal();
+
+userInputHandler
+  .command('addCurrency <currency> <initValue>')
+  .description('Adds supported currency with initial value expressed in PLN')
+  .validate((args) => {
+    if (args.currency === 'PLN') return 'PLN in constant equal to 1';
+    return (typeof(parseFloat(args.initValue)) === 'number') || 'initValue should be valid float number'
+  })
+  .action((args, callback) => {
+    currencies[args.currency.toUpperCase()] = parseFloat(args.initValue);
+    callback();
+  });
+
+userInputHandler
+  .command('setCurrencyChangeInterval <interval>')
+  .description('Sets currency change interval expressed in seconds')
+  .validate((args) => {
+    return (typeof(parseFloat(args.interval)) === 'number') || 'interval should be valid float number'
+  })
+  .action((args, callback) => {
+    settings.currencyChangeInterval = parseFloat(args.interval) * 1000;
+    callback();
+  });
+
+userInputHandler
+  .command('start')
+  .description('Starts server')
+  .action(main);
+
+userInputHandler
+  .delimiter('currencyServer$')
+  .show();
 
 function getEntries() {
   return Object
@@ -43,14 +74,17 @@ function removeSubscriber(subscriber) {
 }
 
 function simulateCurrenciesRates() {
+  const interval = settings.currencyChangeInterval || defaultSettings.currencyChangeInterval;
+  console.log(`Initiating currency changing with interval ${interval} ms`);
   setInterval(() => {
     Object.entries(currencies).forEach(([currency, rate]) => {
+      if (currency === 'PLN') return;
       if (Math.random() > 0.5) {
         currencies[currency] = Math.abs(rate + Math.random() - 0.5);
         notifySubscribers(currency);
       }
     })
-  }, 5000)
+  }, interval)
 }
 
 function currencyRates(call) {
@@ -79,17 +113,16 @@ function currencyRates(call) {
 
 
 function main() {
+  const port = settings.port || defaultSettings.port;
+  console.log(`Starting server on port ${port}`);
+
+  Object.keys(currencies).forEach(curr => {
+    subscribers[curr] = [];
+  });
+
   const server = new grpc.Server();
   server.addService(currencies_proto.Currencies.service, { currencyRates });
-  server.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure());
+  server.bind(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure());
   server.start();
   simulateCurrenciesRates();
 }
-
-main();
-
-setInterval(() => {
-  Object.entries(subscribers).forEach(([currency, currSubscribers]) =>
-    console.log(currency, currSubscribers.length));
-  console.log('-------------------------')
-}, 5000);
