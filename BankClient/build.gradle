@@ -1,8 +1,11 @@
 
 plugins {
     id 'java'
+    id 'application'
     id 'idea'
 }
+
+mainClassName = 'BankClient'
 
 version 'unspecified'
 
@@ -24,5 +27,18 @@ sourceSets {
         java {
             srcDir 'gen-java'
         }
+    }
+}
+
+run {
+    standardInput = System.in
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': "BankClient"
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
