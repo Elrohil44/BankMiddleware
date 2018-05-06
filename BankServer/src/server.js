@@ -63,7 +63,7 @@ function createAccount(account) {
     throw new InvalidArgumentException({why: 'Missing nativeCurrency'});
   }
 
-  if (CurrencyService.currencyRates[accountObject.nativeCurrency.toUpperCase()] === 'undefined') {
+  if (CurrencyService.currenciesSupported.indexOf(accountObject.nativeCurrency.toUpperCase()) === -1) {
     throw new InvalidArgumentException({why: 'Currency not supported'});
   }
 
@@ -125,7 +125,7 @@ function getLoanDetails(guid, loanParameters) {
     throw new InvalidArgumentException({ why: 'startDate should be in future' })
   }
 
-  if (!CurrencyService.currencyRates[parameters.currency]) {
+  if (CurrencyService.currenciesSupported.indexOf(parameters.currency) === -1) {
     throw new InvalidArgumentException({ why: 'Unsupported currency' })
   }
 

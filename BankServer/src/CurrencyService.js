@@ -12,11 +12,11 @@ const rl = createInterface({
 
 const currencies_proto = grpc.load(PROTO_PATH).currencies;
 const currencyRates = {};
+const currenciesSupported = [];
 
 function init(callback) {
   const currencies = new currencies_proto.Currencies('localhost:50051', grpc.credentials.createInsecure());
   const call = currencies.currencyRates();
-  const currenciesSupported = [];
 
   call.on('data', (data) => {
     const msg = data[data.msg];
@@ -53,4 +53,5 @@ function start(callback) {
 export default {
   start,
   currencyRates,
+  currenciesSupported,
 }
